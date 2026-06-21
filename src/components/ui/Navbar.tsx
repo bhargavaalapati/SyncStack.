@@ -1,4 +1,3 @@
-// src/components/Navbar.tsx
 import { auth, signIn, signOut } from "@/auth";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
