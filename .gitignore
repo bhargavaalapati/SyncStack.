@@ -54,3 +54,11 @@ docker-compose.override.yml
 #docs
 AGENTS.md
 CLAUDE.md
+
+#py
+venv/
+.venv/
+node_modules/
+.env
+__pycache__/
+*.pyc
