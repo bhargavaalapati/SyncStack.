@@ -3,8 +3,15 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import SuggestTeammates from "./SuggestTeammates";
+import { useSession } from "next-auth/react"; // We need the client-side hook
 
 export default function ProjectCard({ project }: { project: any }) {
+    const { data: session } = useSession();
+
+    // Check if the currently logged-in user is the creator of this project
+    const isCreator = session?.user?.id === project.creator_id?._id;
+
     return (
         <motion.div
             whileHover={{ y: -6, transition: { duration: 0.2 } }}
@@ -41,10 +48,16 @@ export default function ProjectCard({ project }: { project: any }) {
                         </div>
                     )}
                     <span className="text-xs font-medium text-muted-foreground">
-                        {project.creator_id?.name?.split("") || "Unknown"}
+                        {project.creator_id?.name?.split(" ")[0] || "Unknown"}
                     </span>
                 </div>
-                <Button size="sm" variant="default">Request to Join</Button>
+
+                {/* Conditional Logic: AI Button for Creator, Join Button for others */}
+                {isCreator ? (
+                    <SuggestTeammates projectId={project._id} />
+                ) : (
+                    <Button size="sm" variant="default">Request to Join</Button>
+                )}
             </div>
         </motion.div>
     );
