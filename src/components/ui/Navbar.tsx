@@ -19,6 +19,9 @@ export default async function Navbar() {
                         <span className="text-sm font-medium text-muted-foreground hidden md:block">
                             {session.user.name}
                         </span>
+                        <Link href="/profile">
+                            <Button variant="ghost" size="sm">Profile</Button>
+                        </Link>
                         <Link href="/dashboard">
                             <Button variant="ghost" size="sm">Dashboard</Button>
                         </Link>
