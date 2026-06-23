@@ -19,6 +19,9 @@ export default async function Navbar() {
                         <span className="text-sm font-medium text-muted-foreground hidden md:block">
                             {session.user.name}
                         </span>
+                        <Link href="/dashboard">
+                            <Button variant="ghost" size="sm">Dashboard</Button>
+                        </Link>
                         <form
                             action={async () => {
                                 "use server";

@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SuggestTeammates from "./SuggestTeammates";
 import { useSession } from "next-auth/react"; // We need the client-side hook
+import { applyToProject } from "@/actions/application";
+import { useState } from "react";
 
-export default function ProjectCard({ project }: { project: any }) {
+export default function ProjectCard({ project, initialApplied = false }: { project: any, initialApplied: boolean }) {
     const { data: session } = useSession();
 
     // Check if the currently logged-in user is the creator of this project
@@ -56,9 +58,42 @@ export default function ProjectCard({ project }: { project: any }) {
                 {isCreator ? (
                     <SuggestTeammates projectId={project._id} />
                 ) : (
-                    <Button size="sm" variant="default">Request to Join</Button>
+                    <JoinButton projectId={project._id} initialApplied={initialApplied} />
                 )}
             </div>
         </motion.div>
+    );
+}
+
+// 2. Update the JoinButton signature and state at the bottom of the file
+function JoinButton({ projectId, initialApplied }: { projectId: string, initialApplied: boolean }) {
+    const [loading, setLoading] = useState(false);
+
+    // Initialize state using the truth from the server!
+    const [applied, setApplied] = useState(initialApplied);
+
+    async function handleApply() {
+        setLoading(true);
+        try {
+            await applyToProject(projectId);
+            setApplied(true);
+        } catch (error: any) {
+            if (error.message.includes("already applied")) {
+                setApplied(true);
+            }
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    if (applied) {
+        return <Button size="sm" variant="secondary" disabled>Application Sent</Button>;
+    }
+
+    return (
+        <Button size="sm" variant="default" onClick={handleApply} disabled={loading}>
+            {loading ? "Sending..." : "Request to Join"}
+        </Button>
     );
 }
