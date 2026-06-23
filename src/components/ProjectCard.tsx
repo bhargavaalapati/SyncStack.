@@ -106,7 +106,7 @@ function JoinButton({ projectId, initialApplied }: { projectId: string, initialA
         try {
             await applyToProject(projectId);
             setApplied(true);
-            toast.success("Application transmitted to project architecture board!");
+            toast.success("Application transmitted! (Refresh to sync global state)");
         } catch (error: any) {
             if (error.message.includes("already applied")) {
                 setApplied(true);

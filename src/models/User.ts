@@ -8,6 +8,7 @@ export interface IUser extends Document {
     graduation_year?: number;
     tech_skills: string[];
     bio?: string;
+    role?: string;
     github_url?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -23,6 +24,7 @@ const UserSchema = new Schema<IUser>(
         tech_skills: { type: [String], default: [] },
         github_url: { type: String },
         bio: { type: String, maxLength: 160, default: "" },
+        role: { type: String, maxLength: 50, default: "Developer" },
     },
     { timestamps: true }
 );

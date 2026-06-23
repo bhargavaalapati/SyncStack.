@@ -26,6 +26,7 @@ export async function updateProfile(formData: FormData) {
     const graduation_year = formData.get("graduation_year") as string;
     const tech_skills_raw = formData.get("tech_skills") as string;
     const bio = formData.get("bio") as string;
+    const role = formData.get("role") as string;
 
     // Convert comma-separated string to an array and clean it up
     const tech_skills = tech_skills_raw
@@ -40,6 +41,7 @@ export async function updateProfile(formData: FormData) {
             graduation_year: graduation_year ? parseInt(graduation_year, 10) : undefined,
             tech_skills,
             bio: bio || "",
+            role: role || "Developer",
         },
         { new: true }
     );

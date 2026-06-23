@@ -59,10 +59,10 @@ export default function SuggestTeammates({ projectId }: { projectId: string }) {
                         Algorithmic Execution Notice
                     </div>
                     <p className="mb-2">
-                        The engine reads your architectural problem description and evaluates candidate portfolios using <strong>Semantic Space Overlap</strong>[cite: 85, 89]. Rather than checking raw keywords, it evaluates functional capability (e.g., scoring an Express.js profile highly against a FastAPI dependency)[cite: 89, 90].
+                        The engine reads your architectural problem description and evaluates candidate portfolios using <strong>Semantic Space Overlap</strong>. Rather than checking raw keywords, it evaluates functional capability (e.g., scoring an Express.js profile highly against a FastAPI dependency).
                     </p>
                     <div className="flex items-center justify-between border-t border-amber-500/10 pt-2 mt-2 font-mono text-[10px] text-amber-700/80 dark:text-amber-400/70">
-                        <span>API Rate Ceiling: 15 Requests / Min</span>
+                        <span>API Rate Ceiling: 5 Requests / Min & 20 Requets / Day - For all users so please use 1 time only</span>
                         <span className="bg-amber-500/10 px-1.5 py-0.5 rounded">Context Cache Active</span>
                     </div>
                 </div>

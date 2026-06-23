@@ -47,7 +47,7 @@ export async function getProjectApplications(projectId: string) {
 }
 
 // 3. Update application status (Accept / Reject)
-export async function updateApplicationStatus(applicationId: string, status: "Accepted" | "Rejected") {
+export async function updateApplicationStatus(applicationId: string, status: "Accepted" | "Rejected", reason?: string) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -55,11 +55,11 @@ export async function updateApplicationStatus(applicationId: string, status: "Ac
 
     const app = await Application.findByIdAndUpdate(
         applicationId,
-        { status },
-        { new: true }
+        { status, rejection_reason: reason || "" },
+        { returnDocument: 'after' }
     );
 
-    revalidatePath("/");
+    revalidatePath("/dashboard");
     return JSON.parse(JSON.stringify(app));
 }
 

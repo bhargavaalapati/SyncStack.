@@ -3,11 +3,23 @@ import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 import Link from "next/link";
-import { LayoutDashboard, UserCircle, LogOut } from "lucide-react";
+import { LayoutDashboard, UserCircle } from "lucide-react";
 import { ModeToggle } from "@/components/ModeToggle";
+import { LoginButton, LogoutButton } from "@/components/AuthButtons";
 
 export default async function Navbar() {
     const session = await auth();
+
+    // Define the isolated Server Actions
+    const handleLogin = async () => {
+        "use server";
+        await signIn("github");
+    };
+
+    const handleLogout = async () => {
+        "use server";
+        await signOut();
+    };
 
     return (
         <nav className="flex items-center justify-between p-4 border-b bg-card/50 backdrop-blur-md sticky top-0 z-50">
@@ -17,9 +29,7 @@ export default async function Navbar() {
             </Link>
 
             <div className="flex items-center gap-4">
-                {/* Everyone can see the bulletin link */}
                 <ModeToggle />
-
                 <Link href="/bulletin">
                     <Button variant="ghost" size="sm" className="hidden md:inline-flex">Bulletin</Button>
                 </Link>
@@ -59,20 +69,15 @@ export default async function Navbar() {
                                 </DropdownMenuItem>
                             </Link>
                             <DropdownMenuSeparator />
-                            <form action={async () => { "use server"; await signOut(); }}>
-                                <button type="submit" className="w-full">
-                                    <DropdownMenuItem className="cursor-pointer text-red-500 focus:text-red-500">
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        <span>Log Out</span>
-                                    </DropdownMenuItem>
-                                </button>
-                            </form>
+
+                            {/* Inject our new interactive Client Component */}
+                            <LogoutButton logoutAction={handleLogout} />
+
                         </DropdownMenuContent>
                     </DropdownMenu>
                 ) : (
-                    <form action={async () => { "use server"; await signIn("github"); }}>
-                        <Button size="sm" type="submit">Continue with GitHub</Button>
-                    </form>
+                    /* Inject our new interactive Client Component */
+                    <LoginButton loginAction={handleLogin} />
                 )}
             </div>
         </nav>

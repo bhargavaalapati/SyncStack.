@@ -76,23 +76,29 @@ export async function updateProject(projectId: string, formData: FormData) {
 }
 
 // 4. Delete a project and cascade purge requests (Creator Only)
+// src/actions/project.ts (Inside deleteProject)
 export async function deleteProject(projectId: string) {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
 
     await connectDB();
 
-    // Enforce creator validation at the database constraint layer
-    const deletedProject = await Project.findOneAndDelete({
-        _id: projectId,
-        creator_id: session.user.id,
-    });
+    // SOFT DELETE: We do not use findOneAndDelete. We update the status.
+    const decommissionedProject = await Project.findOneAndUpdate(
+        { _id: projectId, creator_id: session.user.id },
+        { status: "Decommissioned" },
+        { returnDocument: 'after' }
+    );
 
-    if (!deletedProject) throw new Error("Project not found or unauthorized.");
+    if (!decommissionedProject) throw new Error("Project not found or unauthorized.");
 
-    // Cascade delete all incoming developer applications to maintain data relational sanity
-    await Application.deleteMany({ project_id: projectId });
+    // Update all pending applications to reflect the project closure
+    await Application.updateMany(
+        { project_id: projectId, status: "Pending" },
+        { status: "Decommissioned" }
+    );
 
     revalidatePath("/bulletin");
+    revalidatePath("/dashboard");
     return { success: true };
 }

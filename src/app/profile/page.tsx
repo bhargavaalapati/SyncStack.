@@ -1,11 +1,9 @@
+// src/app/profile/page.tsx
 import Navbar from "@/components/ui/Navbar";
-import { getUserProfile, updateProfile } from "@/actions/profile";
+import { getUserProfile } from "@/actions/profile";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import ProfileForm from "@/components/ProfileForm";
 
 export default async function ProfilePage() {
     const session = await auth();
@@ -14,7 +12,6 @@ export default async function ProfilePage() {
     const user = await getUserProfile();
     if (!user) redirect("/");
 
-    // Pre-fill the form with existing skills joined by a comma
     const currentSkillsString = user.tech_skills?.join(", ") || "";
 
     return (
@@ -41,63 +38,9 @@ export default async function ProfilePage() {
                         </div>
                     </div>
 
-                    <form action={updateProfile} className="grid gap-6">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="branch" className="font-semibold">Academic Branch</Label>
-                                <Input
-                                    id="branch"
-                                    name="branch"
-                                    defaultValue={user.branch || ""}
-                                    placeholder="e.g., Computer Science"
-                                />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label htmlFor="graduation_year" className="font-semibold">Graduation Year</Label>
-                                <Input
-                                    id="graduation_year"
-                                    name="graduation_year"
-                                    type="number"
-                                    defaultValue={user.graduation_year || ""}
-                                    placeholder="e.g., 2026"
-                                />
-                            </div>
-                        </div>
+                    {/* The Interactive Client Component Form */}
+                    <ProfileForm user={user} currentSkillsString={currentSkillsString} />
 
-                        <div className="grid gap-2">
-                            <Label htmlFor="bio" className="font-semibold">Developer Bio</Label>
-                            <Input
-                                id="bio"
-                                name="bio"
-                                defaultValue={user.bio || ""}
-                                placeholder="e.g., Full Stack Engineer specializing in optimization algorithms and data systems."
-                                maxLength={160}
-                            />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label htmlFor="tech_skills" className="font-semibold">Technical Skills (Comma separated)</Label>
-                            <Input
-                                id="tech_skills"
-                                name="tech_skills"
-                                defaultValue={currentSkillsString}
-                                placeholder="e.g., React, Node.js, Python, MongoDB"
-                            />
-                            <p className="text-xs text-muted-foreground">
-                                These frameworks are ingested directly by the Gemini model to calculate your compatibility scores.
-                            </p>
-                        </div>
-
-                        {user.tech_skills && user.tech_skills.length > 0 && (
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {user.tech_skills.map((skill: string, idx: number) => (
-                                    <Badge key={idx} variant="secondary">{skill}</Badge>
-                                ))}
-                            </div>
-                        )}
-
-                        <Button type="submit" className="w-full mt-4">Save Telemetry</Button>
-                    </form>
                 </div>
             </main>
         </div>

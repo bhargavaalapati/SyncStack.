@@ -6,6 +6,7 @@ export interface IProject extends Document {
     description: string;
     status: "Open" | "In-Progress" | "Completed";
     required_skills: string[];
+    domain: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -21,6 +22,7 @@ const ProjectSchema = new Schema<IProject>(
             default: "Open",
         },
         required_skills: { type: [String], required: true },
+        domain: { type: String, maxLength: 50, default: "General Tech" },
     },
     { timestamps: true }
 );

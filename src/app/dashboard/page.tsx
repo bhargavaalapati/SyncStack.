@@ -52,7 +52,14 @@ export default async function Dashboard() {
                                                 </div>
                                             )}
                                             <div>
-                                                <h3 className="font-bold text-lg">{app.applicant_id?.name}</h3>
+                                                <h3 className="font-bold text-lg flex items-center gap-2">
+                                                    {app.applicant_id?.name}
+                                                    {/* Display their new role! */}
+                                                    <Badge variant="secondary" className="text-[10px]">{app.applicant_id?.role || "Developer"}</Badge>
+                                                </h3>
+                                                <p className="text-xs text-muted-foreground mt-1 mb-2 max-w-sm italic">
+                                                    "{app.applicant_id?.bio || "No bio provided."}"
+                                                </p>
                                                 <p className="text-sm text-muted-foreground">
                                                     Applied to: <span className="font-semibold text-foreground">{app.project_id?.title}</span>
                                                 </p>
@@ -74,15 +81,28 @@ export default async function Dashboard() {
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div className="flex flex-col items-end gap-3">
-                                            {/* Workflow Actions */}
+                                            {/* Workflow Actions (Only show if Pending) */}
                                             {app.status === "Pending" && (
                                                 <DashboardActionButtons appId={app._id} />
                                             )}
-                                            {/* Secure Contact Reveal (Creator sees Applicant's Email) */}
+
+                                            {/* Secure Contact Reveal */}
                                             {app.status === "Accepted" && (
-                                                <DashboardActionButtons appId={app._id} />
+                                                <div className="text-right text-sm bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                                                    <p className="font-bold text-green-600 dark:text-green-400 mb-1">Match Confirmed</p>
+                                                    <a href={`mailto:${app.applicant_id?.email}`} className="text-xs text-primary hover:underline">
+                                                        {app.applicant_id?.email}
+                                                    </a>
+                                                </div>
+                                            )}
+
+                                            {/* Rejection Log */}
+                                            {app.status === "Rejected" && (
+                                                <div className="text-right text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                                                    <p className="font-bold text-red-600 dark:text-red-400 mb-1">Declined</p>
+                                                    <p className="text-xs text-muted-foreground">{app.rejection_reason || "No reason provided."}</p>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -121,7 +141,6 @@ export default async function Dashboard() {
                                         </div>
 
                                         <div className="flex flex-col items-end">
-                                            {/* Secure Contact Reveal (Applicant sees Creator's Email if Accepted) */}
                                             {app.status === "Accepted" ? (
                                                 <div className="text-right text-sm bg-green-500/10 p-3 rounded-lg border border-green-500/20">
                                                     <p className="font-bold text-green-600 dark:text-green-400 mb-1">Welcome to the Team</p>
@@ -131,7 +150,15 @@ export default async function Dashboard() {
                                                     </a>
                                                 </div>
                                             ) : app.status === "Rejected" ? (
-                                                <p className="text-xs text-muted-foreground">The creator went with another candidate.</p>
+                                                <div className="text-right text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                                                    <p className="font-bold text-red-600 dark:text-red-400 mb-1">Creator Declined</p>
+                                                    <p className="text-xs text-muted-foreground">Reason: {app.rejection_reason || "Went with another candidate."}</p>
+                                                </div>
+                                            ) : app.status === "Decommissioned" ? (
+                                                <div className="text-right text-sm bg-gray-500/10 p-3 rounded-lg border border-gray-500/20">
+                                                    <p className="font-bold text-gray-600 dark:text-gray-400 mb-1">Project Decommissioned</p>
+                                                    <p className="text-xs text-muted-foreground">The creator has removed this architecture.</p>
+                                                </div>
                                             ) : (
                                                 <p className="text-xs text-muted-foreground animate-pulse">Awaiting creator review...</p>
                                             )}
