@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import { Providers } from "@/components/Providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -22,7 +23,16 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>
             {children}
-            <Toaster position="bottom-right" />
+            <Footer />
+            <Toaster
+              position="top-center"
+              duration={2000}
+              richColors
+              theme="system"
+              toastOptions={{
+                className: "font-sans font-medium rounded-xl border p-4 shadow-lg backdrop-blur-md",
+              }}
+            />
           </Providers>
         </ThemeProvider>
       </body>

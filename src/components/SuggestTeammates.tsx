@@ -52,6 +52,21 @@ export default function SuggestTeammates({ projectId }: { projectId: string }) {
                     </DialogDescription>
                 </DialogHeader>
 
+                {/* Gemini 2.5 Flash Telemetry Blueprint & Limit Briefing Card */}
+                <div className="mb-6 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-relaxed text-muted-foreground">
+                    <div className="flex items-center gap-2 font-bold text-amber-600 dark:text-amber-400 mb-1.5 text-sm">
+                        <Sparkles className="w-4 h-4" />
+                        Algorithmic Execution Notice
+                    </div>
+                    <p className="mb-2">
+                        The engine reads your architectural problem description and evaluates candidate portfolios using <strong>Semantic Space Overlap</strong>[cite: 85, 89]. Rather than checking raw keywords, it evaluates functional capability (e.g., scoring an Express.js profile highly against a FastAPI dependency)[cite: 89, 90].
+                    </p>
+                    <div className="flex items-center justify-between border-t border-amber-500/10 pt-2 mt-2 font-mono text-[10px] text-amber-700/80 dark:text-amber-400/70">
+                        <span>API Rate Ceiling: 15 Requests / Min</span>
+                        <span className="bg-amber-500/10 px-1.5 py-0.5 rounded">Context Cache Active</span>
+                    </div>
+                </div>
+
                 <div className="py-4">
                     {loading ? (
                         <div className="flex flex-col items-center justify-center py-12 text-muted-foreground">

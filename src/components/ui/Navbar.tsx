@@ -4,6 +4,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import Image from "next/image";
 import Link from "next/link";
 import { LayoutDashboard, UserCircle, LogOut } from "lucide-react";
+import { ModeToggle } from "@/components/ModeToggle";
 
 export default async function Navbar() {
     const session = await auth();
@@ -17,6 +18,8 @@ export default async function Navbar() {
 
             <div className="flex items-center gap-4">
                 {/* Everyone can see the bulletin link */}
+                <ModeToggle />
+
                 <Link href="/bulletin">
                     <Button variant="ghost" size="sm" className="hidden md:inline-flex">Bulletin</Button>
                 </Link>

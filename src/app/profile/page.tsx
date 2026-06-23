@@ -65,6 +65,17 @@ export default async function ProfilePage() {
                         </div>
 
                         <div className="grid gap-2">
+                            <Label htmlFor="bio" className="font-semibold">Developer Bio</Label>
+                            <Input
+                                id="bio"
+                                name="bio"
+                                defaultValue={user.bio || ""}
+                                placeholder="e.g., Full Stack Engineer specializing in optimization algorithms and data systems."
+                                maxLength={160}
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
                             <Label htmlFor="tech_skills" className="font-semibold">Technical Skills (Comma separated)</Label>
                             <Input
                                 id="tech_skills"

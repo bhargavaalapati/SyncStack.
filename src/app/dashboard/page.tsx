@@ -1,87 +1,148 @@
 import Navbar from "@/components/ui/Navbar";
-import { getDashboardData, updateApplicationStatus } from "@/actions/application";
+import { getDashboardData, getMyApplications, updateApplicationStatus } from "@/actions/application";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FaGithub } from "react-icons/fa";
+import DashboardActionButtons from "@/components/DashboardActionButtons";
 
 export default async function Dashboard() {
     const session = await auth();
     if (!session) redirect("/");
 
-    const applications = await getDashboardData();
+    // Fetch both sides of the marketplace
+    const [inboundApplications, outboundApplications] = await Promise.all([
+        getDashboardData(),
+        getMyApplications()
+    ]);
 
     return (
         <div className="min-h-screen bg-background flex flex-col">
             <Navbar />
-            <main className="flex-1 container mx-auto px-4 py-12 max-w-4xl">
-                <h1 className="text-4xl font-extrabold tracking-tight mb-8">Mission Control</h1>
+            <main className="flex-1 container mx-auto px-4 py-12 max-w-5xl">
+                <h1 className="text-4xl font-extrabold tracking-tight mb-8">Dashboard</h1>
 
-                {applications.length === 0 ? (
-                    <div className="text-center py-24 border-2 border-dashed rounded-xl bg-muted/20">
-                        <h3 className="text-xl font-semibold mb-2">No applications yet</h3>
-                        <p className="text-muted-foreground">Keep broadcasting your architectures to attract talent.</p>
-                    </div>
-                ) : (
-                    <div className="grid gap-4">
-                        {applications.map((app: any) => (
-                            <div key={app._id} className="border rounded-xl p-6 bg-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <Tabs defaultValue="inbound" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-8 max-w-md">
+                        <TabsTrigger value="inbound">Mission Control (Inbound)</TabsTrigger>
+                        <TabsTrigger value="outbound">My Applications (Outbound)</TabsTrigger>
+                    </TabsList>
 
-                                {/* Applicant Info */}
-                                <div className="flex items-start gap-4">
-                                    {app.applicant_id?.image ? (
-                                        <img src={app.applicant_id.image} alt="avatar" className="w-12 h-12 rounded-full border" />
-                                    ) : (
-                                        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center font-bold text-lg">
-                                            {app.applicant_id?.name?.charAt(0) || "U"}
-                                        </div>
-                                    )}
-                                    <div>
-                                        <h3 className="font-bold text-lg">{app.applicant_id?.name}</h3>
-                                        <p className="text-sm text-muted-foreground">
-                                            Applied to: <span className="font-semibold text-foreground">{app.project_id?.title}</span>
-                                        </p>
-                                        <div className="flex items-center gap-4 mt-2">
-                                            <a href={app.applicant_id?.github_url} target="_blank" rel="noreferrer" className="text-xs flex items-center gap-1 hover:text-primary transition-colors">
-                                                <FaGithub className="w-3 h-3" /> GitHub
-                                            </a>
-                                            <Badge variant="outline" className={
-                                                app.status === "Pending" ? "text-amber-500 border-amber-500/30" :
-                                                    app.status === "Accepted" ? "text-green-500 border-green-500/30" : "text-red-500 border-red-500/30"
-                                            }>
-                                                {app.status}
-                                            </Badge>
-                                        </div>
-                                        <div className="mt-3 flex flex-wrap gap-1">
-                                            {app.applicant_id?.tech_skills?.map((skill: string, i: number) => (
-                                                <Badge key={i} variant="secondary" className="text-[10px]">{skill}</Badge>
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Workflow Actions */}
-                                {app.status === "Pending" && (
-                                    <div className="flex gap-2">
-                                        <form action={async () => {
-                                            "use server";
-                                            await updateApplicationStatus(app._id, "Rejected");
-                                        }}>
-                                            <Button variant="outline" className="border-red-200 text-red-600 hover:bg-red-50" type="submit">Reject</Button>
-                                        </form>
-                                        <form action={async () => {
-                                            "use server";
-                                            await updateApplicationStatus(app._id, "Accepted");
-                                        }}>
-                                            <Button className="bg-green-600 hover:bg-green-700 text-white" type="submit">Accept Match</Button>
-                                        </form>
-                                    </div>
-                                )}
+                    {/* ========================================== */}
+                    {/* TAB 1: CREATOR VIEW (INBOUND APPLICATIONS) */}
+                    {/* ========================================== */}
+                    <TabsContent value="inbound">
+                        {inboundApplications.length === 0 ? (
+                            <div className="text-center py-24 border-2 border-dashed rounded-xl bg-muted/20">
+                                <h3 className="text-xl font-semibold mb-2">No applications yet</h3>
+                                <p className="text-muted-foreground">Keep broadcasting your architectures to attract talent.</p>
                             </div>
-                        ))}
-                    </div>
-                )}
+                        ) : (
+                            <div className="grid gap-4">
+                                {inboundApplications.map((app: any) => (
+                                    <div key={app._id} className="border rounded-xl p-6 bg-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <div className="flex items-start gap-4">
+                                            {app.applicant_id?.image ? (
+                                                <img src={app.applicant_id.image} alt="avatar" className="w-12 h-12 rounded-full border" />
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center font-bold text-lg">
+                                                    {app.applicant_id?.name?.charAt(0) || "U"}
+                                                </div>
+                                            )}
+                                            <div>
+                                                <h3 className="font-bold text-lg">{app.applicant_id?.name}</h3>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Applied to: <span className="font-semibold text-foreground">{app.project_id?.title}</span>
+                                                </p>
+                                                <div className="flex items-center gap-4 mt-2">
+                                                    <a href={app.applicant_id?.github_url} target="_blank" rel="noreferrer" className="text-xs flex items-center gap-1 hover:text-primary transition-colors">
+                                                        <FaGithub className="w-3 h-3" /> GitHub
+                                                    </a>
+                                                    <Badge variant="outline" className={
+                                                        app.status === "Pending" ? "text-amber-500 border-amber-500/30" :
+                                                            app.status === "Accepted" ? "text-green-500 border-green-500/30" : "text-red-500 border-red-500/30"
+                                                    }>
+                                                        {app.status}
+                                                    </Badge>
+                                                </div>
+                                                <div className="mt-3 flex flex-wrap gap-1">
+                                                    {app.applicant_id?.tech_skills?.map((skill: string, i: number) => (
+                                                        <Badge key={i} variant="secondary" className="text-[10px]">{skill}</Badge>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col items-end gap-3">
+                                            {/* Workflow Actions */}
+                                            {app.status === "Pending" && (
+                                                <DashboardActionButtons appId={app._id} />
+                                            )}
+                                            {/* Secure Contact Reveal (Creator sees Applicant's Email) */}
+                                            {app.status === "Accepted" && (
+                                                <DashboardActionButtons appId={app._id} />
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </TabsContent>
+
+                    {/* ============================================ */}
+                    {/* TAB 2: APPLICANT VIEW (OUTBOUND APPLICATIONS) */}
+                    {/* ============================================ */}
+                    <TabsContent value="outbound">
+                        {outboundApplications.length === 0 ? (
+                            <div className="text-center py-24 border-2 border-dashed rounded-xl bg-muted/20">
+                                <h3 className="text-xl font-semibold mb-2">No outgoing requests</h3>
+                                <p className="text-muted-foreground">Check the bulletin and find a project to contribute to.</p>
+                            </div>
+                        ) : (
+                            <div className="grid gap-4">
+                                {outboundApplications.map((app: any) => (
+                                    <div key={app._id} className="border rounded-xl p-6 bg-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+                                        <div>
+                                            <h3 className="font-bold text-lg">{app.project_id?.title}</h3>
+                                            <p className="text-sm text-muted-foreground mb-3 line-clamp-1">
+                                                {app.project_id?.description}
+                                            </p>
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-xs font-medium text-muted-foreground">Led by {app.project_id?.creator_id?.name}</span>
+                                                <Badge variant="outline" className={
+                                                    app.status === "Pending" ? "text-amber-500 border-amber-500/30" :
+                                                        app.status === "Accepted" ? "text-green-500 border-green-500/30" : "text-red-500 border-red-500/30"
+                                                }>
+                                                    {app.status}
+                                                </Badge>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex flex-col items-end">
+                                            {/* Secure Contact Reveal (Applicant sees Creator's Email if Accepted) */}
+                                            {app.status === "Accepted" ? (
+                                                <div className="text-right text-sm bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                                                    <p className="font-bold text-green-600 dark:text-green-400 mb-1">Welcome to the Team</p>
+                                                    <p className="text-xs text-muted-foreground mb-1">Contact your lead:</p>
+                                                    <a href={`mailto:${app.project_id?.creator_id?.email}`} className="text-xs font-semibold text-primary hover:underline">
+                                                        {app.project_id?.creator_id?.email}
+                                                    </a>
+                                                </div>
+                                            ) : app.status === "Rejected" ? (
+                                                <p className="text-xs text-muted-foreground">The creator went with another candidate.</p>
+                                            ) : (
+                                                <p className="text-xs text-muted-foreground animate-pulse">Awaiting creator review...</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </TabsContent>
+
+                </Tabs>
             </main>
         </div>
     );

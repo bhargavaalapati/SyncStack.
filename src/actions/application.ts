@@ -83,3 +83,25 @@ export async function getDashboardData() {
 
     return JSON.parse(JSON.stringify(applications));
 }
+
+// Fetch applications the current user has SENT to other projects
+export async function getMyApplications() {
+    const session = await auth();
+    if (!session?.user?.id) return [];
+
+    await connectDB();
+
+    const myApplications = await Application.find({ applicant_id: session.user.id })
+        .populate({
+            path: "project_id",
+            select: "title description creator_id",
+            populate: {
+                path: "creator_id",
+                select: "name email image github_url"
+            }
+        })
+        .sort({ createdAt: -1 })
+        .lean();
+
+    return JSON.parse(JSON.stringify(myApplications));
+}
