@@ -7,7 +7,7 @@ import SuggestTeammates from "./SuggestTeammates";
 import EditProjectDialog from "./EditProjectDialog";
 import { deleteProject } from "@/actions/project";
 import { applyToProject } from "@/actions/application";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { Trash2, Users, Clock, Zap } from "lucide-react";
 import { toast } from "sonner";
@@ -120,7 +120,7 @@ export default function ProjectCard({ project, initialApplied = false }: { proje
                     </div>
                 ) : (
                     <div className="shrink-0">
-                        <JoinButton projectId={project._id} initialApplied={initialApplied} />
+                        <JoinButton projectId={project._id} initialApplied={initialApplied} session={session} />
                     </div>
                 )}
             </div>
@@ -128,16 +128,27 @@ export default function ProjectCard({ project, initialApplied = false }: { proje
     );
 }
 
-function JoinButton({ projectId, initialApplied }: { projectId: string, initialApplied: boolean }) {
+function JoinButton({ projectId, initialApplied, session }: { projectId: string, initialApplied: boolean, session: any }) {
     const [loading, setLoading] = useState(false);
     const [applied, setApplied] = useState(initialApplied);
 
-    // Sync local state if parent prop changes
     useEffect(() => {
         setApplied(initialApplied);
     }, [initialApplied]);
 
     async function handleApply() {
+        // THE INTERCEPT: If no session exists, guide them to login
+        if (!session) {
+            toast.info("Authentication Required", {
+                description: "Please log in to join architectures and sync your telemetry.",
+                action: {
+                    label: "Login",
+                    onClick: () => signIn("github")
+                },
+            });
+            return;
+        }
+
         setLoading(true);
         try {
             await applyToProject(projectId);
@@ -148,6 +159,7 @@ function JoinButton({ projectId, initialApplied }: { projectId: string, initialA
                 setApplied(true);
             }
             toast.error("Failed to complete request propagation.");
+            console.error(error);
         } finally {
             setLoading(false);
         }

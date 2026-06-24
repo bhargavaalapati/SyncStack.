@@ -122,53 +122,63 @@ export default async function Dashboard() {
                             </div>
                         ) : (
                             <div className="grid gap-4">
-                                {outboundApplications.map((app: any) => (
-                                    <div key={app._id} className="border rounded-xl p-6 bg-card shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
-                                        <div>
-                                            <h3 className="font-bold text-lg">{app.project_id?.title}</h3>
-                                            <p className="text-sm text-muted-foreground mb-3 line-clamp-1">
-                                                {app.project_id?.description}
-                                            </p>
-                                            <div className="flex items-center gap-3">
-                                                <span className="text-xs font-medium text-muted-foreground">Led by {app.project_id?.creator_id?.name}</span>
-                                                <Badge variant="outline" className={
-                                                    app.status === "Pending" ? "text-amber-500 border-amber-500/30" :
-                                                        app.status === "Accepted" ? "text-green-500 border-green-500/30" : "text-red-500 border-red-500/30"
-                                                }>
-                                                    {app.status}
-                                                </Badge>
+                                {outboundApplications.map((app: any) => {
+                                    // Determine if the project still exists or was decommissioned
+                                    const isAlive = app.project_id && app.project_id.status !== "Decommissioned";
+
+                                    return (
+                                        <div key={app._id} className={`border rounded-xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6 ${isAlive ? 'bg-card' : 'bg-muted/30 border-dashed'}`}>
+                                            <div className={!isAlive ? "opacity-60" : ""}>
+                                                <h3 className="font-bold text-lg">
+                                                    {app.project_id?.title || "Decommissioned Architecture"}
+                                                </h3>
+                                                <p className="text-sm text-muted-foreground mb-3 line-clamp-1">
+                                                    {app.project_id?.description || "This project has been closed and removed from the bulletin."}
+                                                </p>
+
+                                                <div className="flex items-center gap-3">
+                                                    <span className="text-xs font-medium text-muted-foreground">
+                                                        {isAlive ? `Led by ${app.project_id?.creator_id?.name}` : "Creator Unavailable"}
+                                                    </span>
+                                                    <Badge variant="outline" className={
+                                                        app.status === "Pending" ? "text-amber-500 border-amber-500/30" :
+                                                            app.status === "Accepted" ? "text-green-500 border-green-500/30" :
+                                                                app.status === "Decommissioned" ? "text-gray-500 border-gray-500/30" : "text-red-500 border-red-500/30"
+                                                    }>
+                                                        {app.status}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+
+                                            <div className="flex flex-col items-end shrink-0">
+                                                {app.status === "Accepted" && isAlive ? (
+                                                    <div className="text-right text-sm bg-green-500/10 p-3 rounded-lg border border-green-500/20">
+                                                        <p className="font-bold text-green-600 dark:text-green-400 mb-1">Welcome to the Team</p>
+                                                        <p className="text-xs text-muted-foreground mb-1">Contact your lead:</p>
+                                                        <a href={`mailto:${app.project_id?.creator_id?.email}`} className="text-xs font-semibold text-primary hover:underline">
+                                                            {app.project_id?.creator_id?.email}
+                                                        </a>
+                                                    </div>
+                                                ) : app.status === "Rejected" ? (
+                                                    <div className="text-right text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+                                                        <p className="font-bold text-red-600 dark:text-red-400 mb-1">Creator Declined</p>
+                                                        <p className="text-xs text-muted-foreground">Reason: {app.rejection_reason || "Went with another candidate."}</p>
+                                                    </div>
+                                                ) : app.status === "Decommissioned" || !isAlive ? (
+                                                    <div className="text-right text-sm bg-gray-500/10 p-3 rounded-lg border border-gray-500/20">
+                                                        <p className="font-bold text-gray-600 dark:text-gray-400 mb-1">Project Closed</p>
+                                                        <p className="text-xs text-muted-foreground">The creator has halted this architecture.</p>
+                                                    </div>
+                                                ) : (
+                                                    <p className="text-xs text-muted-foreground animate-pulse">Awaiting creator review...</p>
+                                                )}
                                             </div>
                                         </div>
-
-                                        <div className="flex flex-col items-end">
-                                            {app.status === "Accepted" ? (
-                                                <div className="text-right text-sm bg-green-500/10 p-3 rounded-lg border border-green-500/20">
-                                                    <p className="font-bold text-green-600 dark:text-green-400 mb-1">Welcome to the Team</p>
-                                                    <p className="text-xs text-muted-foreground mb-1">Contact your lead:</p>
-                                                    <a href={`mailto:${app.project_id?.creator_id?.email}`} className="text-xs font-semibold text-primary hover:underline">
-                                                        {app.project_id?.creator_id?.email}
-                                                    </a>
-                                                </div>
-                                            ) : app.status === "Rejected" ? (
-                                                <div className="text-right text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
-                                                    <p className="font-bold text-red-600 dark:text-red-400 mb-1">Creator Declined</p>
-                                                    <p className="text-xs text-muted-foreground">Reason: {app.rejection_reason || "Went with another candidate."}</p>
-                                                </div>
-                                            ) : app.status === "Decommissioned" ? (
-                                                <div className="text-right text-sm bg-gray-500/10 p-3 rounded-lg border border-gray-500/20">
-                                                    <p className="font-bold text-gray-600 dark:text-gray-400 mb-1">Project Decommissioned</p>
-                                                    <p className="text-xs text-muted-foreground">The creator has removed this architecture.</p>
-                                                </div>
-                                            ) : (
-                                                <p className="text-xs text-muted-foreground animate-pulse">Awaiting creator review...</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
+                                    )
+                                })}
                             </div>
                         )}
                     </TabsContent>
-
                 </Tabs>
             </main>
         </div>
