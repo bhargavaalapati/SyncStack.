@@ -33,7 +33,9 @@ export default async function Navbar() {
                 <Link href="/bulletin">
                     <Button variant="ghost" size="sm" className="hidden md:inline-flex">Bulletin</Button>
                 </Link>
-
+                <Link href="/leaderboard">
+                    <Button variant="ghost" size="sm" className="hidden md:inline-flex">Leaderboard</Button>
+                </Link>
                 {session && session.user ? (
                     <DropdownMenu>
                         <DropdownMenuTrigger className="outline-none">

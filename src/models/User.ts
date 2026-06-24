@@ -10,6 +10,10 @@ export interface IUser extends Document {
     bio?: string;
     role?: string;
     github_url?: string;
+    reputation_score: number;
+    projects_shipped: number;
+    timezone: string;
+    commitment_level: "Casual" | "Balanced" | "Grinder";
     createdAt: Date;
     updatedAt: Date;
 }
@@ -25,6 +29,10 @@ const UserSchema = new Schema<IUser>(
         github_url: { type: String },
         bio: { type: String, maxLength: 160, default: "" },
         role: { type: String, maxLength: 50, default: "Developer" },
+        reputation_score: { type: Number, default: 0 },
+        projects_shipped: { type: Number, default: 0 },
+        timezone: { type: String, default: "UTC" },
+        commitment_level: { type: String, enum: ["Casual", "Balanced", "Grinder"], default: "Balanced" },
     },
     { timestamps: true }
 );

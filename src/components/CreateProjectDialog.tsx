@@ -57,6 +57,32 @@ export default function CreateProjectDialog() {
                         <Label htmlFor="required_skills" className="font-semibold">Required Tech Stack (Comma separated)</Label>
                         <Input id="required_skills" name="required_skills" placeholder="e.g., React, FastAPI, Docker, MongoDB" required />
                     </div>
+
+                    {/* NEW FIELDS ADDED HERE */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="team_capacity" className="font-semibold">Team Capacity</Label>
+                            <Input id="team_capacity" name="team_capacity" type="number" min="1" max="20" defaultValue={4} required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="deadline" className="font-semibold">Deadline (Optional)</Label>
+                            <Input id="deadline" name="deadline" type="date" />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="commitment_required" className="font-semibold">Commitment Level</Label>
+                        <select
+                            id="commitment_required"
+                            name="commitment_required"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            defaultValue="Balanced"
+                        >
+                            <option value="Casual">Casual (Weekend Pacing)</option>
+                            <option value="Balanced">Balanced (Steady Pacing)</option>
+                            <option value="Grinder">Grinder (Intense/Sprint)</option>
+                        </select>
+                    </div>
+
                     <Button type="submit" disabled={loading} className="w-full mt-2">
                         {loading ? "Deploying..." : "Post to Bulletin"}
                     </Button>

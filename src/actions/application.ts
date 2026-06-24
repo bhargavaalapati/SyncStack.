@@ -59,6 +59,15 @@ export async function updateApplicationStatus(applicationId: string, status: "Ac
         { returnDocument: 'after' }
     );
 
+    // AUTO-INCREMENT SEATS LOGIC
+    if (status === "Accepted" && app?.project_id) {
+        await Project.findByIdAndUpdate(
+            app.project_id,
+            { $inc: { filled_seats: 1 } }
+        );
+    }
+
+    revalidatePath("bulletin");
     revalidatePath("/dashboard");
     return JSON.parse(JSON.stringify(app));
 }
@@ -76,7 +85,7 @@ export async function getDashboardData() {
 
     // 2. Find all applications made to those specific projects
     const applications = await Application.find({ project_id: { $in: projectIds } })
-        .populate("applicant_id", "name image github_url tech_skills")
+        .populate("applicant_id", "name image github_url tech_skills bio role")
         .populate("project_id", "title")
         .sort({ createdAt: -1 })
         .lean();

@@ -14,6 +14,9 @@ export default function EditProjectDialog({ project }: { project: any }) {
     const [open, setOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
+    // Format the date properly for the HTML input
+    const formattedDate = project.deadline ? new Date(project.deadline).toISOString().split('T')[0] : "";
+
     async function onSubmit(formData: FormData) {
         setLoading(true);
         try {
@@ -56,6 +59,32 @@ export default function EditProjectDialog({ project }: { project: any }) {
                         <Label htmlFor="required_skills" className="font-semibold">Required Tech Stack (Comma separated)</Label>
                         <Input id="required_skills" name="required_skills" defaultValue={project.required_skills.join(", ")} required />
                     </div>
+
+                    {/* NEW EDIT FIELDS */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label htmlFor="team_capacity" className="font-semibold">Team Capacity</Label>
+                            <Input id="team_capacity" name="team_capacity" type="number" min="1" max="20" defaultValue={project.team_capacity} required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label htmlFor="deadline" className="font-semibold">Deadline (Optional)</Label>
+                            <Input id="deadline" name="deadline" type="date" defaultValue={formattedDate} />
+                        </div>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="commitment_required" className="font-semibold">Commitment Level</Label>
+                        <select
+                            id="commitment_required"
+                            name="commitment_required"
+                            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            defaultValue={project.commitment_required || "Balanced"}
+                        >
+                            <option value="Casual">Casual (Weekend Pacing)</option>
+                            <option value="Balanced">Balanced (Steady Pacing)</option>
+                            <option value="Grinder">Grinder (Intense/Sprint)</option>
+                        </select>
+                    </div>
+
                     <Button type="submit" disabled={loading} className="w-full mt-2">
                         {loading ? "Saving Changes..." : "Commit Parameters"}
                     </Button>

@@ -1,5 +1,7 @@
+// Inside src/components/Footer.tsx
 import Link from "next/link";
 import { FaGithub } from "react-icons/fa";
+import { MessageSquarePlus } from "lucide-react";
 
 export default function Footer() {
     return (
@@ -14,7 +16,18 @@ export default function Footer() {
 
                 <div className="flex items-center gap-6 text-xs text-muted-foreground">
                     <Link href="/bulletin" className="hover:text-foreground transition-colors">Bulletin</Link>
-                    <Link href="https://github.com" target="_blank" className="flex items-center gap-1 hover:text-foreground transition-colors">
+
+                    {/* THE NEW FEEDBACK LINK */}
+                    <a
+                        href="https://forms.gle/7hUb1qjbxAE1gnin9"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1.5 text-amber-600 hover:text-amber-500 transition-colors font-semibold"
+                    >
+                        <MessageSquarePlus className="w-3.5 h-3.5" /> Leave Feedback
+                    </a>
+
+                    <Link href="https://github.com/bhargavaalapati/SyncStack." target="_blank" className="flex items-center gap-1 hover:text-foreground transition-colors">
                         <FaGithub className="w-3 h-3" /> System Docs
                     </Link>
                     <span className="cursor-default select-none">v1.0.0-MVP</span>

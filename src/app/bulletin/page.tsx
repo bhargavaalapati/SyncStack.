@@ -1,12 +1,22 @@
 import Navbar from "@/components/ui/Navbar";
 import CreateProjectDialog from "@/components/CreateProjectDialog";
 import { getOpenProjects } from "@/actions/project";
+import { getMyApplications } from "@/actions/application";
 import ProjectGrid from "@/components/ProjectGrid";
 import { auth } from "@/auth";
 
 export default async function Bulletin() {
   const session = await auth();
   const projects = await getOpenProjects();
+
+  // FIXED AMNESIA BUG: Grab all projects the current user has already applied to
+  let appliedProjectIds: string[] = [];
+  if (session?.user?.id) {
+    const myApps = await getMyApplications();
+    appliedProjectIds = myApps.map((app: any) =>
+      app.project_id?._id?.toString() || app.project_id?.toString()
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -20,8 +30,8 @@ export default async function Bulletin() {
           {session?.user && <CreateProjectDialog />}
         </div>
 
-        {/* The isolated client-side search and grid */}
-        <ProjectGrid initialProjects={projects} />
+        {/* Pass down the applied array to lock the buttons globally */}
+        <ProjectGrid initialProjects={projects} appliedProjectIds={appliedProjectIds} />
 
       </main>
     </div>

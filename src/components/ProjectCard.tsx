@@ -8,9 +8,22 @@ import EditProjectDialog from "./EditProjectDialog";
 import { deleteProject } from "@/actions/project";
 import { applyToProject } from "@/actions/application";
 import { useSession } from "next-auth/react";
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trash2, Users, Clock, Zap } from "lucide-react";
 import { toast } from "sonner";
+
+function timeAgo(dateString: string) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
+    if (seconds < 60) return "just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+}
 
 export default function ProjectCard({ project, initialApplied = false }: { project: any, initialApplied?: boolean }) {
     const { data: session } = useSession();
@@ -21,30 +34,49 @@ export default function ProjectCard({ project, initialApplied = false }: { proje
     async function handleDelete() {
         if (!confirm("Are you absolutely sure you want to decommission this project architecture? This action cannot be undone.")) return;
 
-        setDeleting(deleting => !deleting);
+        setDeleting(true);
         try {
             await deleteProject(project._id);
             toast.success("Architecture purged from campus bulletin.");
         } catch (error) {
-            toast.error("Failed to delete project execution parameters.");
-            console.error(error);
-            setDeleting(deleting => !deleting);
+            toast.error("Failed to delete project.");
+            setDeleting(false);
         }
     }
 
     return (
         <motion.div
-            whileHover={{ y: -6, transition: { duration: 0.2 } }}
-            className="border rounded-xl p-6 bg-card shadow-sm flex flex-col justify-between h-full relative overflow-hidden"
+            whileHover={{ y: -5 }}
+            transition={{ duration: 0.2 }}
+            className="border rounded-xl p-6 bg-card flex flex-col justify-between h-full relative overflow-hidden group shadow-sm hover:shadow-lg hover:border-primary/50 transition-all duration-300"
         >
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
             <div>
-                <div className="flex justify-between items-start mb-4 gap-4">
-                    <h3 className="text-xl font-bold tracking-tight leading-tight">{project.title}</h3>
-                    <Badge variant="secondary" className="whitespace-nowrap">{project.status}</Badge>
+                <div className="flex justify-between items-start mb-2 gap-4">
+                    <div>
+                        <h3 className="text-xl font-bold tracking-tight leading-tight">{project.title}</h3>
+                        <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                            Posted {timeAgo(project.createdAt)}
+                        </span>
+                    </div>
+                    <Badge variant="secondary" className="whitespace-nowrap shrink-0">{project.domain || "Tech"}</Badge>
                 </div>
+
+                <div className="flex flex-wrap items-center gap-3 text-[10px] uppercase tracking-wider font-bold text-muted-foreground mb-4">
+                    <span className="flex items-center gap-1"><Users className="w-3 h-3" /> {project.filled_seats || 1}/{project.team_capacity || 4} Seats</span>
+                    {/* Fixed Deadline Rendering */}
+                    <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {project.deadline ? new Date(project.deadline).toLocaleDateString('en-US', { timeZone: 'UTC' }) : "Rolling"}
+                    </span>
+                    <span className="flex items-center gap-1 text-amber-500"><Zap className="w-3 h-3" /> {project.commitment_required || "Balanced"}</span>
+                </div>
+
                 <p className="text-muted-foreground text-sm mb-6 line-clamp-3">
                     {project.description}
                 </p>
+
                 <div className="flex flex-wrap gap-2 mb-6">
                     {project.required_skills.map((skill: string, index: number) => (
                         <Badge key={index} variant="outline" className="bg-primary/5 border-primary/20">
@@ -72,7 +104,6 @@ export default function ProjectCard({ project, initialApplied = false }: { proje
                     </span>
                 </div>
 
-                {/* Dynamic Architectural Interaction Node */}
                 {isCreator ? (
                     <div className="flex items-center gap-1.5 shrink-0">
                         <SuggestTeammates projectId={project._id} />
@@ -80,7 +111,7 @@ export default function ProjectCard({ project, initialApplied = false }: { proje
                         <Button
                             size="sm"
                             variant="outline"
-                            className="h-8 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 border-border/60 dark:hover:bg-red-950/20"
+                            className="h-8 px-2 text-red-500 hover:text-red-600 hover:bg-red-50 border-border/60"
                             onClick={handleDelete}
                             disabled={deleting}
                         >
@@ -101,25 +132,29 @@ function JoinButton({ projectId, initialApplied }: { projectId: string, initialA
     const [loading, setLoading] = useState(false);
     const [applied, setApplied] = useState(initialApplied);
 
+    // Sync local state if parent prop changes
+    useEffect(() => {
+        setApplied(initialApplied);
+    }, [initialApplied]);
+
     async function handleApply() {
         setLoading(true);
         try {
             await applyToProject(projectId);
             setApplied(true);
-            toast.success("Application transmitted! (Refresh to sync global state)");
+            toast.success("Application transmitted! (Global state synced)");
         } catch (error: any) {
             if (error.message.includes("already applied")) {
                 setApplied(true);
             }
             toast.error("Failed to complete request propagation.");
-            console.error(error);
         } finally {
             setLoading(false);
         }
     }
 
     if (applied) {
-        return <Button size="sm" variant="secondary" disabled>Application Sent</Button>;
+        return <Button size="sm" variant="secondary" disabled className="opacity-100 font-medium text-green-600 bg-green-500/10">Request Sent</Button>;
     }
 
     return (
