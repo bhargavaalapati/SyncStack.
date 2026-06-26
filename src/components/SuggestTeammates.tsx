@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getTeammateSuggestions } from "@/actions/ai";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, Timer } from "lucide-react";
 import { FaGithub } from "react-icons/fa";
+import { toast } from "sonner";
 
 export default function SuggestTeammates({ projectId }: { projectId: string }) {
     const [open, setOpen] = useState(false);
@@ -14,16 +15,46 @@ export default function SuggestTeammates({ projectId }: { projectId: string }) {
     const [matches, setMatches] = useState<any[]>([]);
     const [hasFetched, setHasFetched] = useState(false);
 
+    // Exponential Backoff State
+    const [cooldown, setCooldown] = useState(0);
+    const [failureCount, setFailureCount] = useState(0);
+
+    // Countdown Timer Effect
+    useEffect(() => {
+        if (cooldown <= 0) return;
+        const timer = setInterval(() => setCooldown((prev) => prev - 1), 1000);
+        return () => clearInterval(timer);
+    }, [cooldown]);
+
     async function handleFetchSuggestions() {
-        if (hasFetched) return; // Don't re-fetch if we already have the data
+        if (hasFetched || cooldown > 0) return; // Block if cooling down or already fetched
 
         setLoading(true);
         try {
             const results = await getTeammateSuggestions(projectId);
             setMatches(results);
             setHasFetched(true);
-        } catch (error) {
-            console.error(error);
+            setFailureCount(0); // Reset failures on success!
+        } catch (error: any) {
+            // EXPONENTIAL BACKOFF LOGIC
+            const currentFailures = failureCount + 1;
+            setFailureCount(currentFailures);
+
+            // Calculate penalty: 60s -> 120s -> 240s (Max 300s / 5 mins)
+            const baseCooldown = 60;
+            const penaltyMultiplier = Math.pow(2, currentFailures - 1);
+            let nextCooldown = baseCooldown * penaltyMultiplier;
+
+            if (nextCooldown > 300) nextCooldown = 300;
+
+            setCooldown(nextCooldown);
+            setOpen(false); // Force close the modal on error to show the red button
+
+            toast.error("AI Engine Overloaded", {
+                description: `Google Gemini is at capacity. Retrying is locked for ${nextCooldown}s to balance loads.`
+            });
+
+            console.error("Matchmaking failed:", error);
         } finally {
             setLoading(false);
         }
@@ -31,17 +62,25 @@ export default function SuggestTeammates({ projectId }: { projectId: string }) {
 
     return (
         <Dialog open={open} onOpenChange={(isOpen) => {
+            if (cooldown > 0) return; // Prevent opening if cooling down
             setOpen(isOpen);
             if (isOpen) handleFetchSuggestions();
         }}>
             <DialogTrigger asChild>
-                <Button size="sm" variant="secondary" className="gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-500" />
-                    AI Match
-                </Button>
+                {cooldown > 0 ? (
+                    <Button size="sm" variant="destructive" disabled className="gap-2 opacity-90">
+                        <Timer className="w-4 h-4 animate-pulse" />
+                        Cooling Down ({cooldown}s)
+                    </Button>
+                ) : (
+                    <Button size="sm" variant="secondary" className="gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        AI Match
+                    </Button>
+                )}
             </DialogTrigger>
 
-            <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-150 max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-2xl">
                         <Sparkles className="w-6 h-6 text-amber-500" />
@@ -52,17 +91,17 @@ export default function SuggestTeammates({ projectId }: { projectId: string }) {
                     </DialogDescription>
                 </DialogHeader>
 
-                {/* Gemini 2.5 Flash Telemetry Blueprint & Limit Briefing Card */}
+                {/* Shortened & Punchy Notice */}
                 <div className="mb-6 rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs leading-relaxed text-muted-foreground">
                     <div className="flex items-center gap-2 font-bold text-amber-600 dark:text-amber-400 mb-1.5 text-sm">
                         <Sparkles className="w-4 h-4" />
                         Algorithmic Execution Notice
                     </div>
                     <p className="mb-2">
-                        The engine reads your architectural problem description and evaluates candidate portfolios using <strong>Semantic Space Overlap</strong>. Rather than checking raw keywords, it evaluates functional capability (e.g., scoring an Express.js profile highly against a FastAPI dependency).
+                        Evaluates candidates using <strong>Semantic Space Overlap</strong> (functional capability vs. raw keywords).
                     </p>
                     <div className="flex items-center justify-between border-t border-amber-500/10 pt-2 mt-2 font-mono text-[10px] text-amber-700/80 dark:text-amber-400/70">
-                        <span>API Rate Ceiling: 5 Requests / Min & 20 Requets / Day - For all users so please use 1 time only</span>
+                        <span>API Rate Ceiling: 5 Req / Min</span>
                         <span className="bg-amber-500/10 px-1.5 py-0.5 rounded">Context Cache Active</span>
                     </div>
                 </div>
